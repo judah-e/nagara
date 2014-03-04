@@ -8,37 +8,47 @@ object ApplicationBuild extends Build {
     val appVersion      = "1.0-SNAPSHOT"
     val scalaVersion    = "2.10.3"
 
-    val adminDeps = Seq(
-      "jp.t2v" %% "stackable-controller" % "0.3.0",
+    val appDependencies = Seq(
       "mysql" % "mysql-connector-java" % "5.1.18",
       jdbc,
       anorm
     )
 
-    val mainDeps = Seq()
-  
-    lazy val common = play.Project(appName + "-common", appVersion, adminDeps, path = file("modules/common"))
-    lazy val admin = play.Project(appName + "-admin", appVersion, adminDeps, path = file("modules/admin")).settings(
+    lazy val lib = RootProject(file("../lib"))
+
+    val main = play.Project(appName, appVersion, appDependencies
     ).dependsOn(
-      common
+      lib, common, api, admin, website
     ).aggregate(
-      common
-    )
-    lazy val api = play.Project(appName + "-api", appVersion, adminDeps, path = file("modules/api")).settings(
+      common, api, admin, website
+    ) 
+
+    lazy val common = play.Project(
+      name = appName + "-common", 
+      path = file("modules/common")).settings(
     ).dependsOn(
-      common
-    ).aggregate(
-      common
-    )
-    lazy val website = play.Project(appName + "-website", appVersion, adminDeps, path = file("modules/website")).settings(
-    ).dependsOn(
-      common
-    ).aggregate(
-      common
+      lib
     )
 
-    lazy  val main = play.Project(appName, appVersion, mainDeps).settings(
-      // Add your own project settings here      
-    ).dependsOn(admin, api, website).aggregate(admin, api, website)
+    lazy val admin = play.Project(
+      name = appName + "-admin",
+      path = file("modules/admin")).settings(
+    ).dependsOn(
+      lib, common
+    )
+
+    lazy val api = play.Project(
+      name = appName + "-api",
+      path = file("modules/api")).settings(
+    ).dependsOn(
+      lib, common
+    )
+
+    lazy val website = play.Project(
+      name = appName + "-website",
+      path = file("modules/website")).settings(
+    ).dependsOn(
+      lib, common
+    )
 
 }
